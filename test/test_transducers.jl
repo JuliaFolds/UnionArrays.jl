@@ -8,7 +8,9 @@ using Transducers
     @test foldl(+, Map(x -> 2x), xs) == 6
 
     ys = eduction(Map(x -> 2x), xs)
-    @test (@inferred foldl(+, ys, init=0.0)) == 6
+    if COMPILE_ENABLED
+        @test (@inferred foldl(+, ys, init=0.0)) == 6
+    end
 end
 
 end  # module
