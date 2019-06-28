@@ -27,7 +27,7 @@ end
 
 function UnionVector(ETS::Type, data::AbstractVector, typeid::Vector)
     views = foldltupletype((), ETS) do views, ET
-        return (views..., reinterpret(ET, data))
+        return (views..., reinterpret(ofsamesize(eltype(data), ET), data))
     end
     return UnionVector(ETS, data, typeid, views)
 end
@@ -41,11 +41,7 @@ eltypetuple(A::UnionVector{<:Any, ETS}) where ETS = ETS
 Base.size(A::UnionVector) = size(A.data)
 
 function UnionVector(::UndefInitializer, ETS::ElTypeSpec, n::Integer)
-    # TODO: relax this
-    maxsize = max(sizeof.(ETS)...)
-    @assert maxsize == max(sizeof.(ETS)...)
-    elsize = maxsize
-
+    elsize = max(sizeof.(astupleoftypes(ETS))...)
     typeid = zeros(UInt8, n)
     BT = Tuple{ntuple(_ -> UInt8, elsize)...}
     data = Vector{BT}(undef, n)
@@ -76,13 +72,13 @@ Base.@propagate_inbounds typeat(A::UnionVector{<:Any, ETS}, i) where ETS =
     fieldtype(ETS, Int(A.typeid[i]))
 
 Base.@propagate_inbounds Base.getindex(A::UnionVector, i::Int) =
-    A.views[A.typeid[i]][i]
+    A.views[A.typeid[i]][i] |> unpad
 
 # TODO: handle conversion
-typeandid(A::UnionVector, T::Type) =
-    foldltupletype(1, eltypetuple(A)) do id, ET
-        if ET === T
-            reduced((ET, id))
+view_and_id(A::UnionVector, T::Type) =
+    foldlargs(1, A.views...) do id, xs
+        if paddedtype(eltype(xs)) === T
+            reduced((xs, id))
         else
             id + 1
         end
@@ -94,8 +90,8 @@ typeandid(A::UnionVector, T::Type) =
 #     checkbounds(Bool, A.data, i) && checkbounds(Bool, A.typeid, i)
 
 Base.@propagate_inbounds function Base.setindex!(A::UnionVector, v, i::Int)
-    T, id = typeandid(A, typeof(v))
+    xs, id = view_and_id(A, typeof(v))
     A.typeid[i] = id
-    reinterpret(T, A.data)[i] = v
+    xs[i] = v
     return
 end
