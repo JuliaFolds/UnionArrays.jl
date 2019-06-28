@@ -1,10 +1,12 @@
-function Transducers.__foldl__(rf, val, A::UnionVector)
+@inline function Transducers.__foldl__(rf, val, A::UnionVector)
     @assert size(A.data) == size(A.typeid)
     for i in axes(A, 1)
         val = @return_if_reduced let i = i, val = val
-            foldltupletype(1, eltypetuple(A)) do id, ET
+            foldlargs(1, A.views...) do id, v
+                Base.@_inline_meta
                 if @inbounds A.typeid[i] == id
-                    input = @inbounds _getindex(A, i, ET)
+                    # input = @inbounds v[i]
+                    input = GC.@preserve v unsafe_load(pointer(v, i))
                     Reduced(next(rf, val, input))
                 else
                     id + 1

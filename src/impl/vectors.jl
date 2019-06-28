@@ -3,17 +3,33 @@ struct UnionVector{
     ETS,
     TD <: AbstractVector,
     TM <: Vector{UInt8},
+    TV <: Tuple
 } <: Abstract.UnionVector{T}
+
     data::TD
     typeid::TM
+    views::TV
 
-    function UnionVector(::Type{ETS}, data::TD, typeid::TM) where {
+    function UnionVector(
+        ::Type{ETS},
+        data::TD,
+        typeid::TM,
+        views::TV,
+    ) where {
         ETS <: Tuple,
         TD <: AbstractVector,
-        TM <: Vector{UInt8}
+        TM <: Vector{UInt8},
+        TV <: Tuple,
     }
-        return new{asunion(ETS), ETS, TD, TM}(data, typeid)
+        return new{asunion(ETS), ETS, TD, TM, TV}(data, typeid, views)
     end
+end
+
+function UnionVector(ETS::Type, data::AbstractVector, typeid::Vector)
+    views = foldltupletype((), ETS) do views, ET
+        return (views..., reinterpret(ET, data))
+    end
+    return UnionVector(ETS, data, typeid, views)
 end
 
 const ElTypeSpec = Union{Type{<:Tuple}, TypeTuple}
@@ -60,10 +76,7 @@ Base.@propagate_inbounds typeat(A::UnionVector{<:Any, ETS}, i) where ETS =
     fieldtype(ETS, Int(A.typeid[i]))
 
 Base.@propagate_inbounds Base.getindex(A::UnionVector, i::Int) =
-    _getindex(A, i, typeat(A, i))
-
-Base.@propagate_inbounds _getindex(A::UnionVector, i::Int, T::Type) =
-    reinterpret(T, A.data)[i]
+    A.views[A.typeid[i]][i]
 
 # TODO: handle conversion
 typeandid(A::UnionVector, T::Type) =
