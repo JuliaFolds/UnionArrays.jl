@@ -1,6 +1,8 @@
 module Impl
 
 using Base: Dims
+using Transducers
+using Transducers: @return_if_reduced
 
 using ..Abstract
 

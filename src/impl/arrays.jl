@@ -33,6 +33,7 @@ Base.reshape(A::UnionArrayImpls, dims::Tuple{Vararg{Union{Int,Colon}}}) =
 Base.parent(A::UnionArray) = A.parent
 Base.size(A::UnionArray) = size(A.parent)
 Base.getindex(A::UnionArray, I...) = A.parent[I...]
+Base.setindex!(A::UnionArray, v, I...) = setindex!(A.parent, v, I...)
 
 # Base.showarg(io::IO, A::UnionArray, toplevel) =
 #     Base.showarg(io, A.parent, toplevel)

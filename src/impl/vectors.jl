@@ -16,6 +16,8 @@ struct UnionVector{
     end
 end
 
+eltypetuple(A::UnionVector{<:Any, ETS}) where ETS = ETS
+
 Base.size(A::UnionVector) = size(A.data)
 
 function UnionVector(ETS::Tuple, items::AbstractVector)
@@ -59,3 +61,25 @@ Base.@propagate_inbounds typeat(A::UnionVector{<:Any, ETS}, i) where ETS =
 
 Base.@propagate_inbounds Base.getindex(A::UnionVector, i::Int) =
     reinterpret(typeat(A, i), A.data)[i]
+
+# TODO: handle conversion
+typeandid(A::UnionVector, T::Type) =
+    foldltupletype(1, eltypetuple(A)) do id, ET
+        if ET === T
+            reduced((ET, id))
+        else
+            id + 1
+        end
+    end |> ifunreduced() do _
+        error("unsupported element type (type conversion not implemented yet)")
+    end
+
+# Base.checkbounds(::Type{Bool}, A::UnionVector, i) =
+#     checkbounds(Bool, A.data, i) && checkbounds(Bool, A.typeid, i)
+
+Base.@propagate_inbounds function Base.setindex!(A::UnionVector, v, i::Int)
+    T, id = typeandid(A, typeof(v))
+    A.typeid[i] = id
+    reinterpret(T, A.data)[i] = v
+    return
+end
