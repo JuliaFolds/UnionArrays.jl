@@ -9,7 +9,6 @@ makedocs(;
     repo="https://github.com/tkf/UnionArrays.jl/blob/{commit}{path}#L{line}",
     sitename="UnionArrays.jl",
     authors="Takafumi Arakaki <aka.tkf@gmail.com>",
-    assets=String[],
 )
 
 deploydocs(;

@@ -4,5 +4,5 @@
 ```
 
 ```@autodocs
-Modules = [UnionArrays]
+Modules = [UnionArrays, UnionArrays.Abstract]
 ```
