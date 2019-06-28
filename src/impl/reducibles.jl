@@ -4,7 +4,7 @@ function Transducers.__foldl__(rf, val, A::UnionVector)
         val = @return_if_reduced let i = i, val = val
             foldltupletype(1, eltypetuple(A)) do id, ET
                 if @inbounds A.typeid[i] == id
-                    input = @inbounds reinterpret(ET, A.data)[i]
+                    input = @inbounds _getindex(A, i, ET)
                     Reduced(next(rf, val, input))
                 else
                     id + 1

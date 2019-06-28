@@ -60,7 +60,10 @@ Base.@propagate_inbounds typeat(A::UnionVector{<:Any, ETS}, i) where ETS =
     fieldtype(ETS, Int(A.typeid[i]))
 
 Base.@propagate_inbounds Base.getindex(A::UnionVector, i::Int) =
-    reinterpret(typeat(A, i), A.data)[i]
+    _getindex(A, i, typeat(A, i))
+
+Base.@propagate_inbounds _getindex(A::UnionVector, i::Int, T::Type) =
+    reinterpret(T, A.data)[i]
 
 # TODO: handle conversion
 typeandid(A::UnionVector, T::Type) =
