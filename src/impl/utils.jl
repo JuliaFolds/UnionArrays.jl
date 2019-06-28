@@ -1,3 +1,5 @@
+TypeTuple{N} = NTuple{N, Type}
+
 foldltupletype(op, T, ::Type{<:Tuple{}}) = T
 foldltupletype(op, T, ::Type{S}) where {S <: Tuple} =
     foldltupletype(op,

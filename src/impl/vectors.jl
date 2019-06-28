@@ -16,33 +16,33 @@ struct UnionVector{
     end
 end
 
+const ElTypeSpec = Union{Type{<:Tuple}, TypeTuple}
+aseltypetuple(::Type{ETS}) where {ETS <: Tuple} = ETS
+aseltypetuple(ETS::TypeTuple) = Tuple{ETS...}
+
 eltypetuple(A::UnionVector{<:Any, ETS}) where ETS = ETS
 
 Base.size(A::UnionVector) = size(A.data)
 
-function UnionVector(ETS::Tuple, items::AbstractVector)
+function UnionVector(::UndefInitializer, ETS::ElTypeSpec, n::Integer)
     # TODO: relax this
     maxsize = max(sizeof.(ETS)...)
     @assert maxsize == max(sizeof.(ETS)...)
     elsize = maxsize
 
-    typeid = zeros(UInt8, length(items))
+    typeid = zeros(UInt8, n)
     BT = Tuple{ntuple(_ -> UInt8, elsize)...}
-    data = Vector{BT}(undef, length(items))
-    for (i, d) in enumerate(items)
-	for (id, T) in enumerate(ETS)
-	    if d isa T
-		typeid[i] = id
-		reinterpret(T, data)[i] = d
-		@goto found
-	    end
-	end
-	error("$i-th value in `items` is of type $(typeof(d)); not found in:\n",
-	      ETS)
+    data = Vector{BT}(undef, n)
+    return UnionVector(aseltypetuple(ETS), data, typeid)
+end
 
-	@label found
+function UnionVector(ETS::Tuple, items::AbstractVector)
+    A = UnionVector(undef, ETS, length(items))
+    for i in axes(A, 1)
+        # TODO: find the best way to support arrays with offset
+        @inbounds A[i] = items[i - firstindex(A) + firstindex(items)]
     end
-    return UnionVector(Tuple{ETS...}, data, typeid)
+    return A
 end
 
 function UnionVector(data::AbstractVector)
