@@ -3,7 +3,7 @@ struct UnionArray{T, N, P} <: Abstract.UnionArray{T, N}
 
     function UnionArray(parent::P) where {T, N, P <: AbstractArray{T, N}}
         # Make sure that `A.parent` is not a UnionArray/Vector
-        P <: UnionArrayImpls && throw(MethodError(UnionArray, (A,)))
+        P <: UnionArrayImpls && throw(MethodError(UnionArray, (parent,)))
         return new{T, N, P}(parent)
     end
 end
