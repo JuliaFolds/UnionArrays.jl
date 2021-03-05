@@ -1,5 +1,6 @@
 module Impl
 
+import Adapt
 using Base: Dims
 using Transducers
 using Transducers: @return_if_reduced, next, complete

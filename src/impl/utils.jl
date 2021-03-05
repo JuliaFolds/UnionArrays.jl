@@ -23,6 +23,20 @@ astupleoftypes(::Type{T}) where {T <: Tuple} = Tuple(T.parameters)
 
 asunion(T::Type{<:Tuple}) = foldltupletype((T, s) -> Union{T, s}, Union{}, T)
 
+terminating_foldlargs(op, fallback) = fallback()
+@inline function terminating_foldlargs(op, fallback::F, x1, x2, xs...) where {F}
+    acc = op(x1, x2)
+    acc isa Reduced && return unreduced(acc)
+    return terminating_foldlargs(op, fallback, acc, xs...)
+end
+
+# Helping inference for CUDA.jl:
+@inline function terminating_foldlargs(op, fallback, x1, x2)
+    acc = op(x1, x2)
+    acc isa Reduced && return unreduced(acc)
+    return fallback()
+end
+
 
 struct Padded{T, N}
     value::T

@@ -2,7 +2,7 @@ struct UnionVector{
     T,
     ETS,
     TD <: AbstractVector,
-    TM <: Vector{UInt8},
+    TM <: AbstractVector{UInt8},
     TV <: Tuple
 } <: Abstract.UnionVector{T}
 
@@ -18,14 +18,21 @@ struct UnionVector{
     ) where {
         ETS <: Tuple,
         TD <: AbstractVector,
-        TM <: Vector{UInt8},
+        TM <: AbstractVector{UInt8},
         TV <: Tuple,
     }
         return new{asunion(ETS), ETS, TD, TM, TV}(data, typeid, views)
     end
 end
 
-function UnionVector(ETS::Type, data::AbstractVector, typeid::Vector)
+Adapt.adapt_structure(to, A::UnionVector{<:Any,ETS}) where {ETS} = UnionVector(
+    ETS,
+    Adapt.adapt(to, A.data),
+    Adapt.adapt(to, A.typeid),
+    Adapt.adapt(to, A.views),
+)
+
+function UnionVector(ETS::Type, data::AbstractVector, typeid::AbstractVector{UInt8})
     views = foldltupletype((), ETS) do views, ET
         return (views..., reinterpret(ofsamesize(eltype(data), ET), data))
     end
@@ -40,11 +47,28 @@ eltypetuple(A::UnionVector{<:Any, ETS}) where ETS = ETS
 
 Base.size(A::UnionVector) = size(A.data)
 
-function UnionVector(::UndefInitializer, ETS::ElTypeSpec, n::Integer)
-    elsize = max(sizeof.(astupleoftypes(ETS))...)
-    typeid = zeros(UInt8, n)
-    BT = Tuple{ntuple(_ -> UInt8, elsize)...}
-    data = Vector{BT}(undef, n)
+UnionVector(undef::UndefInitializer, ETS::ElTypeSpec, n::Integer) =
+    UnionVector(undef, Vector, ETS, n)
+
+UnionVector(
+    undef::UndefInitializer,
+    VectorType::Type{<:AbstractVector},
+    ETS::ElTypeSpec,
+    n::Integer,
+) = UnionVector(undef, VectorType, VectorType{UInt8}, ETS, n)
+
+function UnionVector(
+    ::UndefInitializer,
+    DataVectorType::Type{<:AbstractVector},
+    TypeTagVectorType::Type{<:AbstractVector{UInt8}},
+    ETS::ElTypeSpec,
+    n::Integer,
+)
+    elsize = max(map(sizeof, astupleoftypes(ETS))...)
+    typeid = TypeTagVectorType(undef, n)
+    fill!(typeid, 0)
+    BT = NTuple{elsize,UInt8}
+    data = DataVectorType{BT}(undef, n)
     return UnionVector(aseltypetuple(ETS), data, typeid)
 end
 
@@ -71,8 +95,33 @@ end
 Base.@propagate_inbounds typeat(A::UnionVector{<:Any, ETS}, i) where ETS =
     fieldtype(ETS, Int(A.typeid[i]))
 
-Base.@propagate_inbounds Base.getindex(A::UnionVector, i::Int) =
-    A.views[A.typeid[i]][i] |> unpad
+struct TypeIDLookupFailed <: Exception
+    id::Int
+end
+
+Base.showerror(io::IO, err::TypeIDLookupFailed) =
+    print(io, "lookup of type id $(err.id) failed")
+
+# Using CPS for begging the compiler to union split things:
+@inline function view_by_id(f::F, A::UnionVector, id::Integer) where {F}
+    @noinline unreachable() = throw(TypeIDLookupFailed(id))
+    return terminating_foldlargs(unreachable, 1, A.views...) do j, xs
+        Base.@_inline_meta
+        if j == id
+            Reduced(f(xs))
+        else
+            j + 1
+        end
+    end
+end
+
+@inline function Base.getindex(A::UnionVector, i::Int)
+    @boundscheck checkbounds(A, i)
+    return view_by_id(A, A.typeid[i]) do xs
+        Base.@_inline_meta
+        unpad(@inbounds xs[i])
+    end
+end
 
 # TODO: handle conversion
 view_and_id(A::UnionVector, T::Type) =
@@ -94,4 +143,13 @@ Base.@propagate_inbounds function Base.setindex!(A::UnionVector, v, i::Int)
     A.typeid[i] = id
     xs[i] = v
     return
+end
+
+function Base.fill!(A::UnionVector, x)
+    v = convert(eltype(A), x)
+    p = v  # TODO: handle padding
+    xs, id = view_and_id(A, typeof(v))
+    fill!(xs, p)
+    fill!(A.typeid, id)
+    return A
 end
