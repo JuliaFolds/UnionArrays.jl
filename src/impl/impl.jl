@@ -1,6 +1,7 @@
 module Impl
 
 using Base: Dims
+using Accessors: @set
 using Transducers
 using Transducers: @return_if_reduced, next, complete
 
