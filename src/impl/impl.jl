@@ -6,7 +6,7 @@ using Transducers
 using Transducers: @return_if_reduced, next, complete
 using Setfield: @set  # using Setfield instead of Accessors for older Julia
 
-using ..Abstract
+using ..UnionArrays: Abstract, UnionArrays, buffereltypefor
 
 include("utils.jl")
 include("vectors.jl")

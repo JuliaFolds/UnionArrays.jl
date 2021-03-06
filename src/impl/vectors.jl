@@ -32,18 +32,35 @@ Adapt.adapt_structure(to, A::UnionVector{<:Any,ETS}) where {ETS} = UnionVector(
     Adapt.adapt(to, A.views),
 )
 
-function UnionVector(ETS::Type, data::AbstractVector, typeid::AbstractVector{UInt8})
+UnionVector(ETS::Type, data::AbstractVector, typeid::AbstractVector{UInt8}) =
+    UnionVector(uniontotuple(ETS::Union), data, typeid)
+
+function UnionVector(ETS::Type{<:Tuple}, data::AbstractVector, typeid::AbstractVector{UInt8})
     views = foldltupletype((), ETS) do views, ET
         return (views..., reinterpret(ofsamesize(eltype(data), ET), data))
     end
     return UnionVector(ETS, data, typeid, views)
 end
 
-const ElTypeSpec = Union{Type{<:Tuple}, TypeTuple}
+# TODO: don't use Tuple{...} as the explicit spec; create a singleton type for it?
+const ElTypeSpec = Union{Type, TypeTuple}
 aseltypetuple(::Type{ETS}) where {ETS <: Tuple} = ETS
+aseltypetuple(::Type{ETS}) where {ETS} = uniontotuple(ETS::Union)
 aseltypetuple(ETS::TypeTuple) = Tuple{ETS...}
 
-eltypetuple(A::UnionVector{<:Any, ETS}) where ETS = ETS
+UnionArrays.buffereltypefor(::Type{ETS}) where {ETS <: Tuple} =
+    foldltupletype(Nothing, ETS) do S, T
+        Base.@_inline_meta
+        if sizeof_aligned(S) < sizeof_aligned(T)
+            T
+        else
+            S
+        end
+    end
+UnionArrays.buffereltypefor(::Type{ETS}) where {ETS} = buffereltypefor(uniontotuple(ETS))
+UnionArrays.buffereltypefor(ETS::TypeTuple) = buffereltypefor(Tuple{ETS...})
+
+UnionArrays.buffereltypeof(::UnionVector{<:Any, ETS}) where ETS = ETS
 
 Base.size(A::UnionVector) = size(A.data)
 
@@ -64,10 +81,9 @@ function UnionVector(
     ETS::ElTypeSpec,
     n::Integer,
 )
-    elsize = max(map(sizeof, astupleoftypes(ETS))...)
     typeid = TypeTagVectorType(undef, n)
     fill!(typeid, 0)
-    BT = NTuple{elsize,UInt8}
+    BT = buffereltypefor(ETS)
     data = DataVectorType{BT}(undef, n)
     return UnionVector(aseltypetuple(ETS), data, typeid)
 end
@@ -123,33 +139,46 @@ end
     end
 end
 
+struct ElTypeLookupFailed{T} <: Exception end
+Base.showerror(io::IO, ::ElTypeLookupFailed{T}) where {T} =
+    print(io, "unsupported element type (type conversion not implemented yet); $T")
+
+# Using CPS for begging the compiler to union split things:
 # TODO: handle conversion
-view_and_id(A::UnionVector, T::Type) =
-    foldlargs(1, A.views...) do id, xs
-        if paddedtype(eltype(xs)) === T
-            reduced((xs, id))
+@inline function view_and_id(f::F, A::UnionVector, ::Type{T}) where {F,T}
+    @noinline unreachable() = throw(TypeIDLookupFailed(id))
+    V = Val(T)
+    return terminating_foldlargs(unreachable, 1, A.views...) do id, xs
+        Base.@_inline_meta
+        if paddedtype(eltype(xs)) === valueof(V)
+            Reduced(f(xs, id))
         else
             id + 1
         end
-    end |> ifunreduced() do _
-        error("unsupported element type (type conversion not implemented yet)")
     end
+end
 
 # Base.checkbounds(::Type{Bool}, A::UnionVector, i) =
 #     checkbounds(Bool, A.data, i) && checkbounds(Bool, A.typeid, i)
 
-Base.@propagate_inbounds function Base.setindex!(A::UnionVector, v, i::Int)
-    xs, id = view_and_id(A, typeof(v))
-    A.typeid[i] = id
-    xs[i] = v
-    return
+@inline function Base.setindex!(A::UnionVector, v, i::Int)
+    @boundscheck checkbounds(A, i)
+    typeid = A.typeid
+    view_and_id(A, typeof(v)) do xs, id
+        Base.@_inline_meta
+        @inbounds typeid[i] = id
+        @inbounds xs[i] = v
+        nothing
+    end
 end
 
 function Base.fill!(A::UnionVector, x)
     v = convert(eltype(A), x)
     p = v  # TODO: handle padding
-    xs, id = view_and_id(A, typeof(v))
-    fill!(xs, p)
-    fill!(A.typeid, id)
+    view_and_id(A, typeof(v)) do xs, id
+        fill!(xs, p)
+        fill!(A.typeid, id)
+        nothing
+    end
     return A
 end
