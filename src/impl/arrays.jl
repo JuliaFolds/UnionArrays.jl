@@ -22,6 +22,10 @@ function Adapt.adapt_structure(to, A::UnionArray)
     end
 end
 
+# TODO: handle `reshape` in Transducers.jl so that we only need one
+# `parent(...)` call here:
+executor_type(A::UnionArray) = executor_type(parent(parent(A)))
+
 # A very minimal dummy array implementation just for implementing `default_reshape`:
 struct DummyArray{N} <: AbstractArray{Any,N}
     dims::NTuple{N,Int}

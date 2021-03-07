@@ -32,6 +32,8 @@ Adapt.adapt_structure(to, A::UnionVector{<:Any,ETS}) where {ETS} = UnionVector(
     Adapt.adapt(to, A.views),
 )
 
+executor_type(A::UnionVector) = executor_type(A.data)
+
 UnionVector(ETS::Type, data::AbstractVector, typeid::AbstractVector{UInt8}) =
     UnionVector(uniontotuple(ETS::Union), data, typeid)
 
@@ -146,7 +148,7 @@ Base.showerror(io::IO, ::ElTypeLookupFailed{T}) where {T} =
 # Using CPS for begging the compiler to union split things:
 # TODO: handle conversion
 @inline function view_and_id(f::F, A::UnionVector, ::Type{T}) where {F,T}
-    @noinline unreachable() = throw(TypeIDLookupFailed(id))
+    @noinline unreachable() = throw(ElTypeLookupFailed{T}())
     V = Val(T)
     return terminating_foldlargs(unreachable, 1, A.views...) do id, xs
         Base.@_inline_meta
