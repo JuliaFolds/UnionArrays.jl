@@ -363,7 +363,7 @@ version = "0.5.8"
 deps = ["ArgCheck", "BangBang", "CompositionsBase", "DefineSingletons", "Distributed", "InitialValues", "Logging", "Markdown", "MicroCollections", "Requires", "Setfield", "SplittablesBase", "Tables"]
 git-tree-sha1 = "494c6effd1fef90b7fd86cae7dce529509966bf6"
 repo-rev = "master"
-repo-url = "https://github.com/tkf/Transducers.jl"
+repo-url = "https://github.com/JuliaFolds/Transducers.jl"
 uuid = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 version = "0.4.61-DEV"
 
