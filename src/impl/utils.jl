@@ -1,3 +1,15 @@
+valueof(::Val{x}) where {x} = x
+
+# Not exactly `Base.aligned_sizeof`
+Base.@pure function sizeof_aligned(T::Type)
+    if isbitstype(T)
+        al = Base.datatype_alignment(T)
+        return (Core.sizeof(T) + al - 1) & -al
+    else
+        return nothing
+    end
+end
+
 TypeTuple{N} = NTuple{N, Type}
 
 astupleoftypes(x::TypeTuple) = x
@@ -19,9 +31,33 @@ astupleoftypes(::Type{T}) where {T <: Tuple} = Tuple(T.parameters)
 @inline foldltupletype(op, ::Type{T}, ::Type{S}) where {T, S <: Tuple} =
     foldltupletype(op,
                    @return_if_reduced(op(T, Base.tuple_type_head(S))),
-		   Base.tuple_type_tail(S))
+          Base.tuple_type_tail(S))
+
+@inline foldrunion(op, ::Type{T}, init) where {T} =
+    if T isa Union
+        acc = @return_if_reduced foldrunion(op, T.b, init)
+        foldrunion(op, T.a, acc)
+    else
+        op(T, init)
+    end
+
+uniontotuple(::Type{T}) where {T} = foldrunion(Base.tuple_type_cons, T, Tuple{})
 
 asunion(T::Type{<:Tuple}) = foldltupletype((T, s) -> Union{T, s}, Union{}, T)
+
+terminating_foldlargs(op, fallback) = fallback()
+@inline function terminating_foldlargs(op, fallback::F, x1, x2, xs...) where {F}
+    acc = op(x1, x2)
+    acc isa Reduced && return unreduced(acc)
+    return terminating_foldlargs(op, fallback, acc, xs...)
+end
+
+# Helping inference for CUDA.jl:
+@inline function terminating_foldlargs(op, fallback, x1, x2)
+    acc = op(x1, x2)
+    acc isa Reduced && return unreduced(acc)
+    return fallback()
+end
 
 
 struct Padded{T, N}

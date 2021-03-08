@@ -6,6 +6,9 @@ module UnionArrays
     replace(read(path, String), "```julia" => "```jldoctest README")
 end UnionArrays
 
+function buffereltypefor end
+function buffereltypeof end
+
 include("abstract/abstract.jl")
 include("impl/impl.jl")
 
