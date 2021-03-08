@@ -34,3 +34,6 @@ steps:
       build.message !~ /^\[skip gpu\]/ &&
       build.message !~ /^\[skip cuda\]/
     timeout_in_minutes: 60
+
+env:
+  SECRET_CODECOV_TOKEN: "jkXNrZ8pAwl83swOxp9//7S/qUvS89lSina47ZPqC4+Tl6LI9lZ0MBld2jAZ2h11nipYLNTFqOm7IExt9ajGZMd1/U/B3GohT1pMfSOUy3Fe+5NlV/Iul4cRnGmp33F6wdRg2gYbJpwc8UUxJwktF3NAm3n7U8FZHw7Tn3s3EHA9h3KHIJEDypYDMQy08VPI7S4uFuUuH6IG/uO+/fDQdQFc5D4EuaFg6PgwJTP3BmN6vLuFXk6iMJtlEAkcMu1eNbT9tb7uLd93yxUNGKpxNpVgMjdVv+fIikY8JxUQLdK+maNn4eGEJDKA7c4HlyNPkI9kIn5H/prvriBZ6gcEKw==;U2FsdGVkX1+1x0ORRaVh5R3iKW6Stg1DuKDZEfLA1Qbp/p28m6yQnbSMyYeSrzYoib6BjWjSfUFlBX2DZgsCWQ=="
