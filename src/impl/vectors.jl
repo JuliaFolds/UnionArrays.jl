@@ -21,16 +21,25 @@ struct UnionVector{
         TM <: AbstractVector{UInt8},
         TV <: Tuple,
     }
-        return new{asunion(ETS), ETS, TD, TM, TV}(data, typeid, views)
+        @static if VERSION >= v"1.6-"
+            return verify(new{asunion(ETS),ETS,TD,TM,TV}(data, typeid, views))
+        else
+            return new{asunion(ETS),ETS,TD,TM,TV}(data, typeid, views)
+        end
     end
 end
 
-Adapt.adapt_structure(to, A::UnionVector{<:Any,ETS}) where {ETS} = UnionVector(
-    ETS,
-    Adapt.adapt(to, A.data),
-    Adapt.adapt(to, A.typeid),
-    Adapt.adapt(to, A.views),
-)
+if VERSION >= v"1.6-"
+    Adapt.adapt_structure(to, A::UnionVector{<:Any,ETS}) where {ETS} =
+        UnionVector(ETS, Adapt.adapt(to, A.data), Adapt.adapt(to, A.typeid))
+else
+    Adapt.adapt_structure(to, A::UnionVector{<:Any,ETS}) where {ETS} = UnionVector(
+        ETS,
+        Adapt.adapt(to, A.data),
+        Adapt.adapt(to, A.typeid),
+        Adapt.adapt(to, A.views),
+    )
+end
 
 executor_type(A::UnionVector) = executor_type(A.data)
 
@@ -108,6 +117,31 @@ function UnionVector(data::AbstractVector)
 	return ETS
     end
     return UnionVector(ETS, data)
+end
+
+struct InvalidUnionVector{T<:UnionVector} <: Exception
+    A::T
+end
+
+function Base.showerror(io::IO, err::InvalidUnionVector)
+    A = err.A
+    unmatches = filter!(collect(Pair{Int,Any}, pairs(A.views))) do (_, xs)
+        UInt(pointer(A.data)) != UInt(pointer(xs))
+    end
+    print(io, "invalid UnionVector: ")
+    println(io, length(unmatches), " incompatible views")
+    println(io, "data pointer: ", pointer(A.data))
+    for (i, xs) in unmatches
+        println(io, i, "-th view pointer: ", pointer(xs))
+    end
+end
+
+function verify(A::UnionVector)
+    foldlargs(true, A.views...) do ok, xs
+        Base.@_inline_meta
+        ok && UInt(pointer(A.data)) == UInt(pointer(xs))
+    end || throw(InvalidUnionVector(A))
+    return A
 end
 
 Base.@propagate_inbounds typeat(A::UnionVector{<:Any, ETS}, i) where ETS =
