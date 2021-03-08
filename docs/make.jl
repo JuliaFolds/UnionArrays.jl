@@ -6,11 +6,11 @@ makedocs(;
     pages=[
         "Home" => "index.md",
     ],
-    repo="https://github.com/tkf/UnionArrays.jl/blob/{commit}{path}#L{line}",
+    repo="https://github.com/JuliaFolds/UnionArrays.jl/blob/{commit}{path}#L{line}",
     sitename="UnionArrays.jl",
     authors="Takafumi Arakaki <aka.tkf@gmail.com>",
 )
 
 deploydocs(;
-    repo="github.com/tkf/UnionArrays.jl",
+    repo="github.com/JuliaFolds/UnionArrays.jl",
 )
