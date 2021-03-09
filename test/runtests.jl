@@ -33,6 +33,7 @@ end
 @testset "$file" for file in find_test("cuda")
     if VERSION < v"1.6-"
         basename(file) == "test_kernels.jl" && continue
+        basename(file) == "test_doctest.jl" && continue
     end
     TEST_CUDA && include(file)
 end
