@@ -13,4 +13,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/JuliaFolds/UnionArrays.jl",
+    push_preview = true,
 )
