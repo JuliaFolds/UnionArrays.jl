@@ -21,6 +21,9 @@ astupleoftypes(::Type{T}) where {T <: Tuple} = Tuple(T.parameters)
               @return_if_reduced(op(x1, x2)),
               xs...)
 
+@inline foldrargs(op, x) = x
+@inline foldrargs(op, x1, x2, xs...) = op(x1, foldrargs(op, x2, xs...))
+
 @inline foldltupletype(op, T, ::Type{<:Tuple{}}) = T
 @inline foldltupletype(op, T, ::Type{S}) where {S <: Tuple} =
     foldltupletype(op,
@@ -44,6 +47,9 @@ astupleoftypes(::Type{T}) where {T <: Tuple} = Tuple(T.parameters)
 uniontotuple(::Type{T}) where {T} = foldrunion(Base.tuple_type_cons, T, Tuple{})
 
 asunion(T::Type{<:Tuple}) = foldltupletype((T, s) -> Union{T, s}, Union{}, T)
+
+union_ntypes(::Type{T}) where {T} = foldrunion((_, n) -> n + 1, T, 0)
+tuple_ntypes(::Type{T}) where {T} = foldltupletype((n, _) -> n + 1, 0, T)
 
 terminating_foldlargs(op, fallback) = fallback()
 @inline function terminating_foldlargs(op, fallback::F, x1, x2, xs...) where {F}

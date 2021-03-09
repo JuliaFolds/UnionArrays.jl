@@ -1,40 +1,42 @@
 struct UnionVector{
     T,
-    ETS,
+    ETS <: NTypes,
     TD <: AbstractVector,
     TM <: AbstractVector{UInt8},
     TV <: Tuple
 } <: Abstract.UnionVector{T}
 
+    types::ETS
     data::TD
     typeid::TM
     views::TV
 
     function UnionVector(
-        ::Type{ETS},
+        types::ETS,
         data::TD,
         typeid::TM,
         views::TV,
     ) where {
-        ETS <: Tuple,
+        ETS <: NTypes,
         TD <: AbstractVector,
         TM <: AbstractVector{UInt8},
         TV <: Tuple,
     }
+        A = new{asunion(types),ETS,TD,TM,TV}(types, data, typeid, views)
         @static if VERSION >= v"1.6-"
-            return verify(new{asunion(ETS),ETS,TD,TM,TV}(data, typeid, views))
+            return verify(A)
         else
-            return new{asunion(ETS),ETS,TD,TM,TV}(data, typeid, views)
+            return A
         end
     end
 end
 
 if VERSION >= v"1.6-"
-    Adapt.adapt_structure(to, A::UnionVector{<:Any,ETS}) where {ETS} =
-        UnionVector(ETS, Adapt.adapt(to, A.data), Adapt.adapt(to, A.typeid))
+    Adapt.adapt_structure(to, A::UnionVector) =
+        UnionVector(A.types, Adapt.adapt(to, A.data), Adapt.adapt(to, A.typeid))
 else
-    Adapt.adapt_structure(to, A::UnionVector{<:Any,ETS}) where {ETS} = UnionVector(
-        ETS,
+    Adapt.adapt_structure(to, A::UnionVector) = UnionVector(
+        A.types,
         Adapt.adapt(to, A.data),
         Adapt.adapt(to, A.typeid),
         Adapt.adapt(to, A.views),
@@ -43,35 +45,26 @@ end
 
 executor_type(A::UnionVector) = executor_type(A.data)
 
-UnionVector(ETS::Type, data::AbstractVector, typeid::AbstractVector{UInt8}) =
-    UnionVector(uniontotuple(ETS::Union), data, typeid)
-
-function UnionVector(ETS::Type{<:Tuple}, data::AbstractVector, typeid::AbstractVector{UInt8})
-    views = foldltupletype((), ETS) do views, ET
-        return (views..., reinterpret(ofsamesize(eltype(data), ET), data))
+function UnionVector(ETS::ElTypeSpec, data::AbstractVector, typeid::AbstractVector{UInt8})
+    types = asntypes(ETS)
+    views = foldlargs((), types...) do views, v
+        return (views..., reinterpret(ofsamesize(eltype(data), valueof(v)), data))
     end
-    return UnionVector(ETS, data, typeid, views)
+    return UnionVector(types, data, typeid, views)
 end
 
-# TODO: don't use Tuple{...} as the explicit spec; create a singleton type for it?
-const ElTypeSpec = Union{Type, TypeTuple}
-aseltypetuple(::Type{ETS}) where {ETS <: Tuple} = ETS
-aseltypetuple(::Type{ETS}) where {ETS} = uniontotuple(ETS::Union)
-aseltypetuple(ETS::TypeTuple) = Tuple{ETS...}
-
-UnionArrays.buffereltypefor(::Type{ETS}) where {ETS <: Tuple} =
-    foldltupletype(Nothing, ETS) do S, T
+UnionArrays.buffereltypefor(ETS::ElTypeSpec) =
+    foldlargs(Nothing, asntypes(ETS)...) do S, x
         Base.@_inline_meta
+        T = valueof(x)
         if sizeof_aligned(S) < sizeof_aligned(T)
             T
         else
             S
         end
     end
-UnionArrays.buffereltypefor(::Type{ETS}) where {ETS} = buffereltypefor(uniontotuple(ETS))
-UnionArrays.buffereltypefor(ETS::TypeTuple) = buffereltypefor(Tuple{ETS...})
 
-UnionArrays.buffereltypeof(::UnionVector{<:Any, ETS}) where ETS = ETS
+UnionArrays.buffereltypeof(A::UnionVector) = eltype(A.data)
 
 Base.size(A::UnionVector) = size(A.data)
 
@@ -96,10 +89,10 @@ function UnionVector(
     fill!(typeid, 0)
     BT = buffereltypefor(ETS)
     data = DataVectorType{BT}(undef, n)
-    return UnionVector(aseltypetuple(ETS), data, typeid)
+    return UnionVector(ETS, data, typeid)
 end
 
-function UnionVector(ETS::Tuple, items::AbstractVector)
+function UnionVector(ETS::ElTypeSpec, items::AbstractVector)
     A = UnionVector(undef, ETS, length(items))
     for i in axes(A, 1)
         # TODO: find the best way to support arrays with offset
@@ -109,12 +102,8 @@ function UnionVector(ETS::Tuple, items::AbstractVector)
 end
 
 function UnionVector(data::AbstractVector)
-    ETS = foldl(data, init=()) do ETS, d
-	T = typeof(d)
-	if T ∉ ETS
-	    ETS = (ETS..., T)
-	end
-	return ETS
+    ETS = foldl(data, init=Union{}) do ETS, x
+        Union{ETS,typeof(x)}
     end
     return UnionVector(ETS, data)
 end
