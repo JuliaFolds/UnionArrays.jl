@@ -11,6 +11,7 @@ import Transducers: executor_type
 using ..UnionArrays: Abstract, UnionArrays, buffereltypefor
 
 include("utils.jl")
+include("eltypespec.jl")
 include("vectors.jl")
 include("arrays.jl")
 include("reducibles.jl")

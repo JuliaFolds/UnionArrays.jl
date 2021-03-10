@@ -6,6 +6,7 @@ module UnionArrays
     replace(read(path, String), "```julia" => "```jldoctest README")
 end UnionArrays
 
+function unionof end
 function buffereltypefor end
 function buffereltypeof end
 

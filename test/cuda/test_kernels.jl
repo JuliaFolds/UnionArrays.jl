@@ -29,7 +29,7 @@ end
 function host_test_shmem()
     threads = 8
     blocks = 3
-    ys = UnionVector(undef, CuVector, (Float32, Nothing), threads * blocks)
+    ys = UnionVector(undef, CuVector, Union{Float32, Nothing}, threads * blocks)
     fill!(ys, 0)
     shmem = (sizeof(UnionArrays.buffereltypeof(ys)) + sizeof(UInt8)) * threads
     CUDA.@sync @cuda threads=threads blocks=blocks shmem=shmem kernel_test_shmem!(ys)
