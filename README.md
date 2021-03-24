@@ -30,7 +30,7 @@ julia> collect(xs)
  0x02
 ```
 
-For example, it can be used for briniging `Union` element types on GPU:
+For example, it can be used for bringing `Union` element types to GPU:
 
 ```julia
 julia> using CUDA
@@ -41,8 +41,8 @@ julia> fill!(xs, nothing);
 ```
 
 Packages like [Transducers.jl](https://github.com/JuliaFolds/Transducers.jl)
-and [Folds.jl](https://github.com/JuliaFolds/Folds.jl) support computasions
-with `UnionArray`s in GPU:
+and [Folds.jl](https://github.com/JuliaFolds/Folds.jl) support computations
+with `UnionArray`s on GPU:
 
 ```julia
 julia> using Folds, FoldsCUDA
