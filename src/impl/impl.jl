@@ -14,6 +14,5 @@ include("utils.jl")
 include("eltypespec.jl")
 include("vectors.jl")
 include("arrays.jl")
-include("reducibles.jl")
 
 end  # module
