@@ -1,22 +1,22 @@
 module TestUnionArrays
 using Test
 
-if VERSION ≥ v"1.6-"
-    try
-        pkgid = Base.PkgId(Base.UUID("052768ef-5323-5732-b1bb-66c8b64840ba"), "CUDA")
-        Base.require(pkgid)
-    catch
-        @info "Failed to import CUDA. Trying again with `@stdlib`..."
-        push!(LOAD_PATH, "@stdlib")
-    end
-end
+env_test_cuda = lowercase(get(ENV, "UNIONARRAYS_JL_TEST_CUDA", "auto"))
 
-const TEST_CUDA = try
+const TEST_CUDA = if env_test_cuda == "true"
     import CUDA
-    CUDA.has_cuda_gpu()
-catch
+    true
+elseif env_test_cuda == "auto"
+    try
+        import CUDA
+        CUDA.has_cuda_gpu()
+    catch
+        false
+    end
+else
     false
 end
+
 const TEST_GPU = TEST_CUDA
 
 TEST_CUDA && CUDA.allowscalar(false)
