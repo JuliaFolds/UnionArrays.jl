@@ -71,7 +71,7 @@ struct Padded{T, N}
     pad::NTuple{N, UInt8}
 end
 
-Padded{T, N}(value::T) where {T, N} = Padded(value, zeropad(N))
+Padded{T, N}(value::T) where {T, N} = Padded(value, zeropad(Val{N}()))
 zeropad(N) = ntuple(_ -> UInt8(0), N)
 addpadding(N::Integer, ::Type{T}) where T = Padded{T, N}
 addpadding(N::Integer, value::T) where T = Padded{T, N}(value)
