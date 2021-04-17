@@ -173,8 +173,8 @@ version = "0.2.3"
 
 [[FoldsCUDA]]
 deps = ["CUDA", "GPUArrays", "InitialValues", "Transducers", "UnionArrays"]
-git-tree-sha1 = "dc0a4f4f0d57eb9643c7294c90aac8d7f596f3d4"
-repo-rev = "teerf"
+git-tree-sha1 = "1531a8276a8b8a150830ea3ac1df7a7203ddef88"
+repo-rev = "master"
 repo-url = "https://github.com/JuliaFolds/FoldsCUDA.jl.git"
 uuid = "6cd66ae4-5932-4b96-926d-e73e578e42cc"
 version = "0.1.6-DEV"
@@ -182,7 +182,7 @@ version = "0.1.6-DEV"
 [[FoldsCUDATests]]
 deps = ["Adapt", "Aqua", "CUDA", "Documenter", "FLoops", "Folds", "FoldsCUDA", "GPUArrays", "InitialValues", "LiterateTest", "Random", "Random123", "Referenceables", "Setfield", "SplittablesBase", "Test", "Transducers"]
 git-tree-sha1 = "92f78983c24f9261b5d4ac8b49e9d935660d82ca"
-repo-rev = "teerf"
+repo-rev = "master"
 repo-subdir = "test/FoldsCUDATests"
 repo-url = "https://github.com/JuliaFolds/FoldsCUDA.jl.git"
 uuid = "d11caea5-3c98-4cd5-8a56-9589fe6662ee"
