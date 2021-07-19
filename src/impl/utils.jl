@@ -65,6 +65,14 @@ end
     return fallback()
 end
 
+@inline function terminating_foldlargs(op, fallback, x1, x2, x3)
+    acc = op(x1, x2)
+    acc isa Reduced && return unreduced(acc)
+    acc = op(acc, x3)
+    acc isa Reduced && return unreduced(acc)
+    return fallback()
+end
+
 
 struct Padded{T, N}
     value::T

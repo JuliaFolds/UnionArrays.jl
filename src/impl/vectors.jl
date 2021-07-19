@@ -186,14 +186,19 @@ end
 # Base.checkbounds(::Type{Bool}, A::UnionVector, i) =
 #     checkbounds(Bool, A.data, i) && checkbounds(Bool, A.typeid, i)
 
-@inline function Base.setindex!(A::UnionVector, v, i::Int)
+@inline function Base.setindex!(A::UnionVector, v::T, i::Int) where {T}
+    @noinline unreachable() = throw(ElTypeLookupFailed{nothing}())
     @boundscheck checkbounds(A, i)
     typeid = A.typeid
-    view_and_id(A, typeof(v)) do xs, id
+    return terminating_foldlargs(unreachable, (v, 1), A.views...) do (v, id), xs
         Base.@_inline_meta
-        @inbounds typeid[i] = id
-        @inbounds xs[i] = v
-        nothing
+        if v isa paddedtype(eltype(xs))
+            @inbounds typeid[i] = id
+            @inbounds xs[i] = v
+            Reduced(nothing)
+        else
+            (v, id + 1)
+        end
     end
 end
 
