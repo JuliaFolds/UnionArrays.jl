@@ -54,6 +54,10 @@ Base.reshape(A::UnionArrayImpls, dims::Dims) =
 Base.reshape(A::UnionArrayImpls, dims::Tuple{Vararg{Union{Int,Colon}}}) =
     ua_reshape(A, dims) :: UnionArrayImpls
 
+# disambiguation:
+Base.reshape(A::UnionArrayImpls, dims::Tuple{Colon}) =
+    ua_reshape(A, dims) :: UnionArrayImpls
+
 Base.parent(A::UnionArray) = A.parent
 Base.size(A::UnionArray) = size(A.parent)
 Base.getindex(A::UnionArray, I...) = A.parent[I...]
