@@ -9,6 +9,7 @@ end UnionArrays
 function unionof end
 function buffereltypefor end
 function buffereltypeof end
+function eltypebyid end
 
 include("abstract/abstract.jl")
 include("impl/impl.jl")

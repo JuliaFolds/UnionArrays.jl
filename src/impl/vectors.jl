@@ -66,6 +66,12 @@ UnionArrays.buffereltypefor(ETS::ElTypeSpec) =
 
 UnionArrays.buffereltypeof(A::UnionVector) = eltype(A.data)
 
+function UnionArrays.eltypebyid(A::UnionVector, ::Val{id}) where {id}
+    id > length(A.types) && return Union{}
+    id < 1 && return Union{}
+    return valueof(A.types[id])
+end
+
 Base.size(A::UnionVector) = size(A.data)
 
 UnionVector(undef::UndefInitializer, ETS::ElTypeSpec, n::Integer) =
