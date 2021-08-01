@@ -1,0 +1,13 @@
+name = "UnionArraysTests"
+uuid = "a66ddc63-82b4-4fd3-8fb7-6a8ed6db2f9a"
+authors = ["Takafumi Arakaki <aka.tkf@gmail.com> and contributors"]
+version = "0.0.1"
+
+[deps]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
+UnionArrays = "d6dd79e4-993b-11e9-1366-0de1c9fe1122"
+
+[compat]
+julia = "1"

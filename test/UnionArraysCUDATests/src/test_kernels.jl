@@ -36,7 +36,7 @@ function host_test_shmem()
     return ys
 end
 
-@testset "shmem" begin
+function test_shmem()
     xs = collect(Union{Nothing,Float32}, 1:8 * 3)
     xs[2:2:end] .= nothing
     for block in Iterators.partition(eachindex(xs), 8)
@@ -44,5 +44,7 @@ end
     end
     @test collect(host_test_shmem()) == xs
 end
+
+should_test_module() = VERSION >= v"1.6-"
 
 end  # module

@@ -1,8 +1,9 @@
 module TestVectors
 
-include("preamble.jl")
+using UnionArrays
+using Test
 
-@testset "homogeneous size" begin
+function test_homogeneous_size()
     xs = UnionVector(Any[1, 2.0])
     @test xs[1] === 1
     @test xs[2] === 2.0
@@ -10,7 +11,7 @@ include("preamble.jl")
     @test xs[1] === 3.0
 end
 
-@testset "heterogeneous size" begin
+function test_heterogeneous_size()
     xs = UnionVector(Any[UInt8(1), 2.0, (a=1, b=2)])
     @test xs[1] === UInt8(1)
     @test xs[2] === 2.0

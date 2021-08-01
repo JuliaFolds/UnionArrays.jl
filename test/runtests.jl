@@ -1,41 +1,30 @@
-module TestUnionArrays
-using Test
+using TestFunctionRunner
 
-env_test_cuda = lowercase(get(ENV, "UNIONARRAYS_JL_TEST_CUDA", "auto"))
-
-const TEST_CUDA = if env_test_cuda == "true"
-    import CUDA
-    true
-elseif env_test_cuda == "auto"
-    try
-        import CUDA
-        CUDA.has_cuda_gpu()
-    catch
-        false
+let env_test_cuda = lowercase(get(ENV, "UNIONARRAYS_JL_TEST_CUDA", "auto")),
+    test_cuda = if env_test_cuda == "auto"
+        try
+            import CUDA
+            true
+        catch
+            false
+        end
+    else
+        env_test_cuda == "true"
     end
-else
-    false
-end
 
-const TEST_GPU = TEST_CUDA
+    if test_cuda
+        TestFunctionRunner.@run(packages = ["UnionArraysCUDATests"])
 
-TEST_CUDA && CUDA.allowscalar(false)
-
-find_test(subdir = "") = sort([
-    joinpath(subdir, file) for file in readdir(joinpath(@__DIR__, subdir)) if
-    match(r"^test_.*\.jl$", file) !== nothing
-])
-
-@testset "$file" for file in find_test()
-    TEST_GPU || include(file)
-end
-
-@testset "$file" for file in find_test("cuda")
-    if VERSION < v"1.6-"
-        basename(file) == "test_kernels.jl" && continue
-        basename(file) == "test_doctest.jl" && continue
+        try
+            using FoldsCUDATests
+            true
+        catch err
+            @info "Failed to import `FoldsCUDATests`" exception = (err, catch_backtrace())
+            false
+        end && begin
+            FoldsCUDATests.runtests_unionarrays()
+        end
+    else
+        TestFunctionRunner.@run(packages = ["UnionArraysTests"])
     end
-    TEST_CUDA && include(file)
 end
-
-end  # module
