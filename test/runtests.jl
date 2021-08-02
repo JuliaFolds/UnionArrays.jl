@@ -15,15 +15,8 @@ let env_test_cuda = lowercase(get(ENV, "UNIONARRAYS_JL_TEST_CUDA", "auto")),
     if test_cuda
         TestFunctionRunner.@run(packages = ["UnionArraysCUDATests"])
 
-        try
-            using FoldsCUDATests
-            true
-        catch err
-            @info "Failed to import `FoldsCUDATests`" exception = (err, catch_backtrace())
-            false
-        end && begin
-            FoldsCUDATests.runtests_unionarrays()
-        end
+        using FoldsCUDATests
+        FoldsCUDATests.runtests_unionarrays()
     else
         TestFunctionRunner.@run(packages = ["UnionArraysTests"])
     end
