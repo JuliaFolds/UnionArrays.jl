@@ -1,5 +1,0 @@
-[deps]
-CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
-TestFunctionRunner = "792026f5-ac9a-4a19-adcb-47b0ce2deb5d"
-UnionArrays = "d6dd79e4-993b-11e9-1366-0de1c9fe1122"
-UnionArraysCUDATests = "8106f4ae-0388-4bd1-9e3f-399fe7ea23bc"
