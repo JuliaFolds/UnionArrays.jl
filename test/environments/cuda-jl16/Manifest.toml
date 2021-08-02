@@ -196,7 +196,7 @@ version = "0.1.0"
 
 [[FoldsCUDATests]]
 deps = ["Adapt", "Aqua", "CUDA", "Documenter", "FLoops", "Folds", "FoldsCUDA", "FoldsCUDABenchmarks", "GPUArrays", "InitialValues", "LiterateTest", "Random", "Random123", "Referenceables", "Setfield", "SplittablesBase", "Test", "TestFunctionRunner", "Transducers"]
-git-tree-sha1 = "a28710684fe6d2e6752f118e777e854935dc35d8"
+git-tree-sha1 = "099b24b043e683b121609325d8d6e77ceb7bd2ff"
 repo-rev = "TestFunctionRunner"
 repo-subdir = "test/FoldsCUDATests"
 repo-url = "https://github.com/JuliaFolds/FoldsCUDA.jl.git"
