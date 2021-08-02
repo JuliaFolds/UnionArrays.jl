@@ -12,8 +12,13 @@ end
 
 include_tests()
 
-function __init__()
+function before_test_module()
     CUDA.allowscalar(false)
+
+    if lowercase(get(ENV, "CI", "false")) == "true"
+        CUDA.versioninfo()
+        println()
+    end
 end
 
 end  # module UnionArraysCUDATests
