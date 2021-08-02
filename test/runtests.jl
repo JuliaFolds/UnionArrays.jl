@@ -13,6 +13,12 @@ let env_test_cuda = lowercase(get(ENV, "UNIONARRAYS_JL_TEST_CUDA", "auto")),
     end
 
     if test_cuda
+        if lowercase(get(ENV, "CI", "false")) == "true"
+            import CUDA
+            CUDA.versioninfo()
+            println()
+        end
+
         TestFunctionRunner.@run(packages = ["UnionArraysCUDATests"])
 
         using FoldsCUDATests
