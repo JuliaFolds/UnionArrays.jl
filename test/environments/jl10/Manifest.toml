@@ -101,6 +101,12 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 deps = ["Libdl"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
+[[LoadAllPackages]]
+deps = ["Pkg"]
+git-tree-sha1 = "de9eababca8fdc9b6b207ed05f99693faa608230"
+uuid = "b37bcd2d-1570-475d-a8c6-9b4fae6d0ba9"
+version = "0.1.0"
+
 [[Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
@@ -190,9 +196,22 @@ git-tree-sha1 = "bb1064c9a84c52e277f1096cf41434b675cd368b"
 uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 version = "1.6.1"
 
+[[Terminators]]
+git-tree-sha1 = "e72e157c08773595052733e8b39944a49b0109d9"
+uuid = "b0858c3f-a9bf-4cba-a0e3-6aaeea5477ac"
+version = "0.1.1"
+
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[TestFunctionRunner]]
+deps = ["Distributed", "LoadAllPackages", "Pkg", "Terminators", "Test"]
+git-tree-sha1 = "2ece8665ebb10965e97f21136d8a713633e9a315"
+repo-rev = "master"
+repo-url = "https://github.com/tkf/TestFunctionRunner.jl"
+uuid = "792026f5-ac9a-4a19-adcb-47b0ce2deb5d"
+version = "0.1.4-DEV"
 
 [[Transducers]]
 deps = ["Adapt", "ArgCheck", "BangBang", "Baselet", "CompositionsBase", "DefineSingletons", "Distributed", "InitialValues", "Logging", "Markdown", "MicroCollections", "Requires", "Setfield", "SplittablesBase", "Tables"]
@@ -212,6 +231,12 @@ deps = ["Adapt", "Setfield", "Transducers"]
 path = "../../.."
 uuid = "d6dd79e4-993b-11e9-1366-0de1c9fe1122"
 version = "0.1.3-DEV"
+
+[[UnionArraysTests]]
+deps = ["Aqua", "Test", "Transducers", "UnionArrays"]
+path = "../../UnionArraysTests"
+uuid = "a66ddc63-82b4-4fd3-8fb7-6a8ed6db2f9a"
+version = "0.0.1"
 
 [[ZygoteRules]]
 deps = ["MacroTools"]

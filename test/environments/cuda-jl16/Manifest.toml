@@ -184,11 +184,11 @@ version = "0.2.6"
 
 [[FoldsCUDA]]
 deps = ["CUDA", "InitialValues", "Transducers", "UnionArrays"]
-git-tree-sha1 = "17f7942b528ef59e30d1f02d4a54e75e46553d3b"
+git-tree-sha1 = "f09d3711cfc17e1c066b21cb39e4ab70615e9d4a"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaFolds/FoldsCUDA.jl.git"
 uuid = "6cd66ae4-5932-4b96-926d-e73e578e42cc"
-version = "0.1.9-DEV"
+version = "0.1.10-DEV"
 
 [[FoldsCUDABenchmarks]]
 deps = ["BenchmarkTools", "CUDA", "Folds", "FoldsCUDA"]
@@ -525,9 +525,11 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TestFunctionRunner]]
 deps = ["Distributed", "LoadAllPackages", "Pkg", "Terminators", "Test"]
-git-tree-sha1 = "9b4dc94c31f85a386e7e7793d78dd4c237f8cfdc"
+git-tree-sha1 = "2ece8665ebb10965e97f21136d8a713633e9a315"
+repo-rev = "master"
+repo-url = "https://github.com/tkf/TestFunctionRunner.jl"
 uuid = "792026f5-ac9a-4a19-adcb-47b0ce2deb5d"
-version = "0.1.4"
+version = "0.1.4-DEV"
 
 [[TimerOutputs]]
 deps = ["ExprTools", "Printf"]
@@ -553,6 +555,12 @@ deps = ["Adapt", "Setfield", "Transducers"]
 path = "../../.."
 uuid = "d6dd79e4-993b-11e9-1366-0de1c9fe1122"
 version = "0.1.3-DEV"
+
+[[UnionArraysCUDATests]]
+deps = ["CUDA", "Documenter", "Folds", "FoldsCUDA", "Test", "UnionArrays"]
+path = "../../UnionArraysCUDATests"
+uuid = "8106f4ae-0388-4bd1-9e3f-399fe7ea23bc"
+version = "0.0.1"
 
 [[Zlib_jll]]
 deps = ["Libdl"]
