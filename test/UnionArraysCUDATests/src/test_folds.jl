@@ -8,7 +8,7 @@ using UnionArrays
 
 const ==′ = isequal
 
-@testset "UnionVector" begin
+function test_unionvector()
     xs = UnionVector(undef, CuVector, Union{Float32, Missing}, 3)
     fill!(xs, 1)
     CUDA.@allowscalar xs[2] = missing
@@ -25,7 +25,7 @@ const ==′ = isequal
     end
 end
 
-@testset "UnionMatrix" begin
+function test_unionmatrix()
     A = UnionArray(undef, CuVector, Union{Float32, Missing}, (3, 2))
     fill!(A, 1)
     CUDA.@allowscalar A[2, 2] = missing

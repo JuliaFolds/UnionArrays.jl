@@ -1,8 +1,9 @@
 module TestArrays
 
-include("preamble.jl")
+using UnionArrays
+using Test
 
-@testset begin
+function test()
     A = reshape(UnionVector(Any[1, 2.0]), 1, :)
     @test A isa UnionArray
     @test A[1] === 1
