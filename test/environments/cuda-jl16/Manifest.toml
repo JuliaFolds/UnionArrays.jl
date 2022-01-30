@@ -184,9 +184,11 @@ version = "0.2.6"
 
 [[FoldsCUDA]]
 deps = ["CUDA", "InitialValues", "Transducers", "UnionArrays"]
-git-tree-sha1 = "c7baef02bdb24bf391663af9508974d2f09c7fe8"
+git-tree-sha1 = "17f7942b528ef59e30d1f02d4a54e75e46553d3b"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaFolds/FoldsCUDA.jl.git"
 uuid = "6cd66ae4-5932-4b96-926d-e73e578e42cc"
-version = "0.1.8"
+version = "0.1.9-DEV"
 
 [[FoldsCUDABenchmarks]]
 deps = ["BenchmarkTools", "CUDA", "Folds", "FoldsCUDA"]
