@@ -1,9 +1,10 @@
 module TestPadded
 
-include("preamble.jl")
+using UnionArrays
 using UnionArrays.Impl: ofsamesize, unpad, Padded
+using Test
 
-@testset "ofsamesize" begin
+function test_ofsamesize()
     @testset "bigger = $bigger" for (bigger, value) in [
         (Float64, UInt8(0)),
         (NTuple{7, UInt8}, UInt8(0)),
@@ -16,7 +17,7 @@ using UnionArrays.Impl: ofsamesize, unpad, Padded
     end
 end
 
-@testset "convert" begin
+function test_convert()
     xs = ofsamesize.(Float64, UInt8.(1:10)) :: Vector
     @test eltype(xs) <: Padded
     @test unpad(xs[1]) === UInt8(1)
