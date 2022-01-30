@@ -25,7 +25,7 @@ jobs:
         uses: tkf/julia-update-manifests@v1
         with:
           version: '1.6'
-          projects: test/environments/cuda-jl16
+          projects: test/environments/cuda-jl16 docs
       - name: Update */Manifest.toml (1.4)
         uses: tkf/julia-update-manifests@v1
         with:
@@ -36,11 +36,6 @@ jobs:
         with:
           version: '1.0'
           projects: test/environments/jl10
-      - name: Update */Manifest.toml (1.5)
-        uses: tkf/julia-update-manifests@v1
-        with:
-          version: '1.5'
-          projects: docs
 
       # https://github.com/peter-evans/create-pull-request
       # https://github.com/marketplace/actions/create-pull-request
